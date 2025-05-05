@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react';
-import { pipeline } from '@huggingface/transformers';
 
 interface AudioAnalyzerProps {
   onThreatDetected: () => void;
@@ -10,7 +9,6 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
   const [isListening, setIsListening] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [model, setModel] = useState<any>(null);
   const [modelLoading, setModelLoading] = useState(true);
   
   // Threat detection keywords
@@ -21,10 +19,8 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
     const loadModel = async () => {
       try {
         console.log("Loading audio classification model...");
-        // In a real app, we'd use a specific audio classification model 
-        // For now, we'll simulate with a text classification model
-        const classifier = await pipeline('text-classification', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
-        setModel(classifier);
+        // In a real app, we'd use a specific audio classification model
+        // For development purposes, we'll simulate with just keyword detection
         setModelLoading(false);
         console.log("Model loaded successfully");
       } catch (error) {
@@ -79,22 +75,8 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
               transcribedText.toLowerCase().includes(keyword)
             );
             
-            // For demonstration: Use the model if available, otherwise use keyword detection
-            let isThreatening = containsThreatKeyword;
-            
-            if (model) {
-              // Use the model for more sophisticated detection
-              const result = await model(transcribedText);
-              console.log("Model result:", result);
-              
-              // In this demo, we're using a sentiment model where "NEGATIVE" might indicate distress
-              // In a real app, you'd use a model specifically trained for threat detection
-              if (result[0].label === "NEGATIVE" && result[0].score > 0.8) {
-                isThreatening = true;
-              }
-            }
-            
-            if (isThreatening) {
+            // For demonstration: Use keyword detection
+            if (containsThreatKeyword) {
               console.log("THREAT DETECTED!");
               onThreatDetected();
             }

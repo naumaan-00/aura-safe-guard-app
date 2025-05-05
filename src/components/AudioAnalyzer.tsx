@@ -19,10 +19,12 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
     const loadModel = async () => {
       try {
         console.log("Loading audio classification model...");
-        // In a real app, we'd use a specific audio classification model
-        // For development purposes, we'll simulate with just keyword detection
-        setModelLoading(false);
-        console.log("Model loaded successfully");
+        // In a real app, we'd load a proper model for mobile
+        // For development purposes, we'll simulate with keyword detection
+        setTimeout(() => {
+          setModelLoading(false);
+          console.log("Model loaded successfully");
+        }, 1000);
       } catch (error) {
         console.error("Error loading model:", error);
         // Fallback to simple keyword detection if model fails to load
@@ -33,7 +35,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
     loadModel();
   }, []);
 
-  // Initialize audio recording
+  // Initialize audio recording with mobile-optimized settings
   useEffect(() => {
     if (modelLoading) return;
 
@@ -42,9 +44,19 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
         const context = new AudioContext();
         setAudioContext(context);
 
-        // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
+        // Request microphone access with mobile-optimized constraints
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          } 
+        });
+        
+        const recorder = new MediaRecorder(stream, {
+          mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp3'
+        });
+        
         setMediaRecorder(recorder);
         setIsListening(true);
         
@@ -79,6 +91,11 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
             if (containsThreatKeyword) {
               console.log("THREAT DETECTED!");
               onThreatDetected();
+              
+              // On mobile, we could also trigger vibration
+              if ('vibrate' in navigator) {
+                navigator.vibrate([100, 50, 100, 50, 100]);
+              }
             }
           } catch (error) {
             console.error("Error processing audio:", error);
@@ -99,7 +116,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({ onThreatDetected }) => {
     const startNewRecordingSession = () => {
       if (mediaRecorder && isListening) {
         mediaRecorder.start();
-        // Record for 5 seconds at a time
+        // Record for 5 seconds at a time - shorter for mobile to save battery
         setTimeout(() => {
           if (mediaRecorder.state === "recording") {
             mediaRecorder.stop();

@@ -11,35 +11,19 @@ import EmergencyServices from "./pages/EmergencyServices";
 import SafetyTips from "./pages/SafetyTips";
 import Settings from "./pages/Settings";
 import { useEffect } from "react";
+import { useCapacitorInit } from "./hooks/useCapacitorInit";
 
 const queryClient = new QueryClient();
 
-// Create stub for mobile capabilities that will be replaced by actual implementations when running on a device
-const createCapacitorStubs = () => {
-  // Stub implementation that works in browser
-  return {
-    initCapacitor: async () => {
-      console.log("Capacitor stub initialized - actual functionality available on mobile devices");
-    },
-    cleanupCapacitor: () => {
-      console.log("Capacitor stub cleanup - actual functionality available on mobile devices");
-    }
-  };
-};
-
 const App = () => {
+  const { initCapacitor, cleanupCapacitor } = useCapacitorInit();
+
   useEffect(() => {
-    // Use stub implementation for browser development
-    const { initCapacitor, cleanupCapacitor } = createCapacitorStubs();
-    
-    // Initialize mobile capabilities
     initCapacitor();
-    
     return () => {
-      // Clean up when component unmounts
       cleanupCapacitor();
     };
-  }, []);
+  }, [initCapacitor, cleanupCapacitor]);
 
   return (
     <QueryClientProvider client={queryClient}>

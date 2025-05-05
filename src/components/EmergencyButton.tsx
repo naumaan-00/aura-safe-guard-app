@@ -60,7 +60,7 @@ const EmergencyButton: React.FC<EmergencyButtonProps> = ({ onActivate }) => {
           </svg>
         )}
       </button>
-      <style jsx>{`
+      <style>{`
         @keyframes countdown {
           to {
             stroke-dashoffset: 0;
